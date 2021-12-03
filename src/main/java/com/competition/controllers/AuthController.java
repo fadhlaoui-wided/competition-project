@@ -1,23 +1,32 @@
 package com.competition.controllers;
 
+
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 
 import com.competition.config.JwtTokenUtil;
 import com.competition.entities.Users;
 import com.competition.services.UserService;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:4200")
 public class AuthController {
 
 	@Autowired
@@ -27,13 +36,36 @@ public class AuthController {
 	@Autowired
 	private UserService usersService;
 
-	@PostMapping("/login")
-	public String createAuthenticationToken(@RequestBody Users user) throws Exception {
+	@PostMapping(path ="/login" )
+	public Map<String,Object>  createAuthenticationToken(@RequestBody Users user) throws Exception {
 
 		Authentication auth = authenticate(user.getEmail(), user.getPassword());
 
 		final String token = jwtTokenUtil.generateToken(auth.getName(), auth.getAuthorities());
-		return token;
+
+
+		Map<String,Object> map = new HashMap<>(3);
+		map.put("accessToken", token);
+		map.put("role", 1);
+		map.put("user", usersService.loadUserByUsername(user.getEmail()));
+		return  map ;
+	}
+	@PostMapping(path ="/loginToken" )
+	public Map<String,Object>  logintoken  (@RequestBody Users user) throws Exception {
+		Authentication auth = authenticate(user.getEmail(), "wided1234");
+
+		final String token = jwtTokenUtil.generateToken(auth.getName(), auth.getAuthorities());
+
+		Users  us  =  new Users();
+		us = usersService.loadUserByUsername(user.getEmail());
+		if (  us != null) {
+			Map<String,Object> map = new HashMap<>(3);
+			map.put("accessToken", token);
+			map.put("role", 1);
+			map.put("user", usersService.loadUserByUsername(user.getEmail()));
+			return  map ;
+		}else
+			return null ;
 	}
 
 	private Authentication authenticate(String username, String password) throws Exception {

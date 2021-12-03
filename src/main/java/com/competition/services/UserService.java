@@ -23,7 +23,7 @@ public class UserService implements UserDetailsService {
 	private PasswordEncoder passwordEncoder;
 
 	@Override
-	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+	public Users loadUserByUsername(String username) throws UsernameNotFoundException {
 		List<Users> users = userRepository.findByEmail(username);
 		if (users.isEmpty()) {
 			return null;
@@ -32,6 +32,7 @@ public class UserService implements UserDetailsService {
 		}
 
 	}
+
 
 	public String register(Users user) throws Exception {
 		List<Users> users = userRepository.findByEmail(user.getEmail());
